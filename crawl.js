@@ -29,11 +29,20 @@ if (global.isCli) {
 
 function download(url, path) {
   return new Promise((r, _) => {
+    if (!url.startsWith("http")) {
+      url = 'http:' + url;
+    }
+    
+    console.log(url);
     console.log(path);
-    request(url).pipe(fs.createWriteStream(path)).on('finish', function() {
+    if (fs.existsSync(path)) {
       r(true);
-    });
-  });
+    } else {
+      request(url).pipe(fs.createWriteStream(path)).on('finish', function() {
+        r(true);
+      });
+    }
+});
 }
 
 
@@ -144,6 +153,7 @@ async function main() {
   let $ = cheerio.load(html);
   let arr = $('.list-chapter .chapter').toArray().map(dom => $(dom).find('a').attr('href')).reverse();
   for (let url of arr) {
+    // await new Promise(resolve => setTimeout(resolve, 500));
     let ex = /chap\-(\d+)/.exec(url);
     let chap = ex[1] - 0;
     if (chap < CHAPTER_START || chap > CHAPTER_END) {
