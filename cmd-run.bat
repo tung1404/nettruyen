@@ -1,1 +1,1 @@
-node crawl.js -c truyen-nhan-atula-shura-no-mon-i-6901 -s 1 -e 200 -p 2
+node crawl.js -c tieu-hoa-thuong-4088 -s 1 -e 1 -p 5

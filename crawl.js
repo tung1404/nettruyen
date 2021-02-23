@@ -34,11 +34,24 @@ function download(url, path) {
     }
     
     console.log(url);
-    console.log(path);
     if (fs.existsSync(path)) {
       r(true);
     } else {
-      request(url).pipe(fs.createWriteStream(path)).on('finish', function() {
+      const hrtime_bigint = process.hrtime.bigint();
+      const tempFile = path + '.' + hrtime_bigint;
+      console.log(tempFile);
+
+      const options = {
+        url: url,
+        headers: {
+          'User-Agent': 'request'
+        }
+      };
+
+      request(options).pipe(fs.createWriteStream(tempFile))
+      .on('finish', function() {
+        fs.renameSync(tempFile, path);
+        console.log(path);
         r(true);
       });
     }
@@ -57,8 +70,17 @@ async function downloadFirst(folder, arr) {
     return;
   }
   let item = arr.shift();
-  let filePath = path.join(folder, `${pad(item.page, 4)}.png`);
-  await download(item.url, filePath).then(_ => downloadFirst(folder, arr));
+  let filePath = path.join(folder, `${item.filename}`);
+  await download(item.url, filePath).then(isFlag => {
+    // console.log(isFlag);
+    if (!isFlag) download(item.url, filePath);
+    try {
+      downloadFirst(folder, arr)
+    } catch (e) {
+      console.log(e);
+      return new Error(e)
+    }
+  });
 }
 
 async function crawlChapter(chap, url) {
@@ -73,7 +95,7 @@ async function crawlChapter(chap, url) {
   let $ = cheerio.load(html);
   let arr = $('.page-chapter img').toArray().map(img => $(img).attr('src'));
 
-  let jobs = arr.map((img, i) => ({url: img, page: i}));
+  let jobs = arr.map((img, i) => ({url: img, page: i, filename: path.basename(img)}));
   var pool = [];
   for (let i = 0 ; i < PARALLEL_DOWNLOAD; i++) {
     pool.push(downloadFirst(folder, jobs));
