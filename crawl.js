@@ -34,11 +34,14 @@ function download(url, path) {
     }
     
     console.log(url);
+    console.log(path);
     if (fs.existsSync(path)) {
       r(true);
     } else {
       const hrtime_bigint = process.hrtime.bigint();
-      const tempFile = path + '.' + hrtime_bigint;
+      
+      const realPath = path.split('?')[0];
+      const tempFile = realPath + '.' + hrtime_bigint;
       console.log(tempFile);
 
       const options = {
@@ -50,8 +53,8 @@ function download(url, path) {
 
       request(options).pipe(fs.createWriteStream(tempFile))
       .on('finish', function() {
-        fs.renameSync(tempFile, path);
-        console.log(path);
+        fs.renameSync(tempFile, realPath);
+        console.log(realPath);
         r(true);
       });
     }

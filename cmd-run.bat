@@ -1,1 +1,1 @@
-node crawl.js -c tieu-hoa-thuong-4088 -s 1 -e 1 -p 5
+node crawl.js -c iron-wok-jan-dau-bep-sieu-dang-18464 -s 1 -e 1 -p 5
